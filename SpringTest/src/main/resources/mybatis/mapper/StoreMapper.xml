@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.StoreMapper">
+
+
+    <insert id="insertStore">
+        INSERT INTO store (가맹점명, 프랜차이즈명, 배달가능여부, 좋아요수)
+        VALUES (#{가맹점명}, #{프랜차이즈명}, #{배달가능여부}, #{좋아요수})
+    </insert>
+    <update id="updateLikeCount">
+        UPDATE store SET 좋아요수 = 좋아요수 + 1
+        WHERE 가맹점명 = #{가맹점명}
+    </update>
+    <select id="selectAllStore" resultType="com.test.StoreDTO">
+        SELECT * FROM store
+    </select>
+    <select id="selectStore" resultType="com.test.StoreDTO">
+        SELECT * FROM store WHERE 가맹점명 = #{가맹점명}
+    </select>
+</mapper>

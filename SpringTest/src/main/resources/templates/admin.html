@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="https://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form action="">
+        <select name="" id="sort">
+            <option value="">정렬</option>
+        </select>
+        <table border="1">
+            <tr>
+                <th>순번</th>
+                <th>프렌차이즈명</th>
+                <th>가맹점명</th>
+                <th>배달가능여부</th>
+                <th>좋아요수</th>
+            </tr>
+            <tbody>
+            <tr th:each="store, stat:${stores}">
+                <td></td>
+                <td th:text="${store.프랜차이즈명}"></td>
+                <td th:text="${store.가맹점명}"></td>
+                <td th:text="${store.배달가능여부}"></td>
+                <td th:text="${store.좋아요수}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="https://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매장 정보</title>
+</head>
+<body>
+<h1>유저 사용 페이지</h1>
+<select id="siGunGuSelect">
+    <option value="">전체</option>
+</select>
+<select id="deliverySelect">
+    <option value="">전체</option>
+</select>
+<table id="storeTable" border="1">
+    <thead>
+    <tr>
+        <th>순번</th>
+        <th>프렌차이즈명</th>
+        <th>가맹점명</th>
+        <th>전화번호</th>
+        <th>도로명주소</th>
+        <th>평일운영시간</th>
+        <th>토요일운영시간</th>
+        <th>배달가능여부</th>
+        <th>좋아요하기</th>
+    </tr>
+    </thead>
+    <tbody id="storeTableBody">
+
+    </tbody>
+</table>
+
+<script>
+    let originalData = []; // 원본 데이터를 저장할 변수
+
+    fetch("https://api.odcloud.kr/api/15109950/v1/uddi:1f78fe49-78b4-4784-a5f0-e2c8a60515b4?page=2&perPage=10&serviceKey=NaiSxC8Cyo20WmSz5o6DumB04ifAN1zA1mLenlEcrzkvrqCCFJyk9YeiN7l0ZkALF5LQS4g88kK5MjOr/8NBow==")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data); // 받은 JSON 데이터 로그
+            originalData = data.data; // 원본 데이터 저장
+            populateTable(data); // 테이블 채우기
+            populateSelect(data); // 선택 옵션 채우기
+        })
+        .catch(error => console.error('Error fetching data:', error));
+
+    function populateTable(data) {
+        var tableBody = document.getElementById('storeTableBody');
+
+        // 기존 테이블 행 삭제
+        tableBody.innerHTML = '';
+
+        // 데이터 형식 확인
+        if (!data || !data.data || !Array.isArray(data.data)) {
+            console.error('Data format is not as expected:', data);
+            return;
+        }
+
+        // JSON 데이터를 순회하며 테이블 행 생성
+        data.data.forEach((item, index) => {
+            var row = document.createElement('tr');
+            var franchiseName = item.가맹점명.split(' ')[0]; // 공백 앞 첫 단어 추출
+
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td class="fren" name="fren">${franchiseName}</td>
+                <td class="gamen" name="gamen">${item.가맹점명}</td>
+                <td>${item.전화번호}</td>
+                <td>${item.소재지도로명주소}</td>
+                <td>${item.평일운영시작시각}</td>
+                <td>${item.토요일운영시작시각}</td>
+                <td class="bedal" name="bedal">${item.배달가능여부}</td>
+                <td><button style="border: none; color: blue; background-color: white" onclick="likeButtonClick(this)">좋아요</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    function populateSelect(data) {
+        var siGunGuSelect = document.getElementById('siGunGuSelect');
+        var deliverySelect = document.getElementById('deliverySelect');
+
+        // 기존 옵션 삭제
+        siGunGuSelect.innerHTML = '<option value="">전체</option>';
+        deliverySelect.innerHTML = '<option value="">전체</option>';
+
+        // 데이터 형식 확인
+        if (!data || !data.data || !Array.isArray(data.data)) {
+            console.error('Data format is not as expected:', data);
+            return;
+        }
+
+        // 고유한 시군구명과 배달 가능 여부 수집
+        var uniqueSiGunGu = [];
+        var uniqueDeliveryOptions = [];
+
+        data.data.forEach(item => {
+            if (!uniqueSiGunGu.includes(item.시군구명)) {
+                uniqueSiGunGu.push(item.시군구명);
+            }
+            if (!uniqueDeliveryOptions.includes(item.배달가능여부)) {
+                uniqueDeliveryOptions.push(item.배달가능여부);
+            }
+        });
+
+        // 시군구 select 옵션 생성
+        uniqueSiGunGu.forEach(siGunGu => {
+            var option = document.createElement('option');
+            option.textContent = siGunGu;
+            option.value = siGunGu;
+            siGunGuSelect.appendChild(option);
+        });
+
+        // 배달 가능 여부 select 옵션 생성
+        uniqueDeliveryOptions.forEach(deliveryOption => {
+            var option = document.createElement('option');
+            option.textContent = deliveryOption;
+            option.value = deliveryOption;
+            deliverySelect.appendChild(option);
+        });
+
+        // 시군구 선택 시 필터링
+        siGunGuSelect.addEventListener('change', () => {
+            var selectedSiGunGu = siGunGuSelect.value;
+            var selectedDeliveryOption = deliverySelect.value;
+            var filteredData = originalData;
+
+            if (selectedSiGunGu) {
+                filteredData = filteredData.filter(item => item.시군구명 === selectedSiGunGu);
+            }
+
+            if (selectedDeliveryOption) {
+                filteredData = filteredData.filter(item => item.배달가능여부 === selectedDeliveryOption);
+            }
+
+            populateTable({ data: filteredData }); // 필터링된 데이터를 테이블에 채우기
+        });
+
+        // 배달 가능 여부 선택 시 필터링
+        deliverySelect.addEventListener('change', () => {
+            var selectedSiGunGu = siGunGuSelect.value;
+            var selectedDeliveryOption = deliverySelect.value;
+            var filteredData = originalData;
+
+            if (selectedSiGunGu) {
+                filteredData = filteredData.filter(item => item.시군구명 === selectedSiGunGu);
+            }
+
+            if (selectedDeliveryOption) {
+                filteredData = filteredData.filter(item => item.배달가능여부 === selectedDeliveryOption);
+            }
+
+            populateTable({ data: filteredData }); // 필터링된 데이터를 테이블에 채우기
+        });
+    }
+
+    function likeButtonClick(button) {
+        const tr = button.parentElement.parentElement;
+        const fren = tr.querySelector('.fren');
+        const gamen = tr.querySelector('.gamen');
+        const bedal = tr.querySelector('.bedal');
+
+        // 서버로 데이터 전송 (예시로 콘솔에 출력)
+        fetch('/admin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                가맹점명: gamen.textContent,
+                프랜차이즈명: fren.textContent,
+                배달가능여부: bedal.textContent
+            })
+        }).then(response => {
+            // 서버 응답 처리
+            console.log(fren.textContent)
+        }).catch(error => {
+            console.error('Error sending like count:', error);
+        });
+    }
+</script>
+</body>
+</html>
