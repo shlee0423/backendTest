@@ -7,9 +7,13 @@
     <title>Title</title>
 </head>
 <body>
-    <form action="">
-        <select name="" id="sort">
+<h1>관리자 페이지</h1>
+    <form name="form">
+        <select name="keyword" id="sort">
             <option value="">정렬</option>
+            <option value="up" th:selected="${keyword == 'up'}">오름차순</option>
+            <option value="down" th:selected="${keyword == 'down'}">내림차순</option>
+            <option value="latest" th:selected="${keyword == 'latest'}">최신순</option>
         </select>
         <table border="1">
             <tr>
@@ -20,8 +24,8 @@
                 <th>좋아요수</th>
             </tr>
             <tbody>
-            <tr th:each="store, stat:${stores}">
-                <td></td>
+            <tr style="text-align: center" th:each="store, stat:${stores}">
+                <td th:text="${stat.count}"></td>
                 <td th:text="${store.프랜차이즈명}"></td>
                 <td th:text="${store.가맹점명}"></td>
                 <td th:text="${store.배달가능여부}"></td>
@@ -32,3 +36,10 @@
     </form>
 </body>
 </html>
+<script>
+    const form = document.forms.namedItem('form');
+    const select = document.getElementById('sort');
+    select.onchange = () => {
+        form.submit();
+    }
+</script>

@@ -9,12 +9,17 @@
 </head>
 <body>
 <h1>유저 사용 페이지</h1>
-<select id="siGunGuSelect">
-    <option value="">전체</option>
-</select>
-<select id="deliverySelect">
-    <option value="">전체</option>
-</select>
+<form id="form">
+    <select id="siGunGu">
+        <option value="">전체</option>
+    </select>
+    <select id="delivery">
+        <option value="">전체</option>
+        <option value="가능">배달 가능</option>
+        <option value="불가능">배달 불가능</option>
+    </select>
+    <button>조회</button>
+</form>
 <table id="storeTable" border="1">
     <thead>
     <tr>
@@ -27,9 +32,10 @@
         <th>토요일운영시간</th>
         <th>배달가능여부</th>
         <th>좋아요하기</th>
+        <th>좋아요수</th>
     </tr>
     </thead>
-    <tbody id="storeTableBody">
+    <tbody id="tbody" style="text-align: center">
 
     </tbody>
 </table>
@@ -40,7 +46,7 @@
     fetch("https://api.odcloud.kr/api/15109950/v1/uddi:1f78fe49-78b4-4784-a5f0-e2c8a60515b4?page=2&perPage=10&serviceKey=NaiSxC8Cyo20WmSz5o6DumB04ifAN1zA1mLenlEcrzkvrqCCFJyk9YeiN7l0ZkALF5LQS4g88kK5MjOr/8NBow==")
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('에러');
             }
             return response.json();
         })
@@ -48,28 +54,18 @@
             console.log(data); // 받은 JSON 데이터 로그
             originalData = data.data; // 원본 데이터 저장
             populateTable(data); // 테이블 채우기
-            populateSelect(data); // 선택 옵션 채우기
         })
-        .catch(error => console.error('Error fetching data:', error));
+        .catch(error => console.error('에러에러: ' + error));
 
     function populateTable(data) {
-        var tableBody = document.getElementById('storeTableBody');
-
-        // 기존 테이블 행 삭제
-        tableBody.innerHTML = '';
-
-        // 데이터 형식 확인
-        if (!data || !data.data || !Array.isArray(data.data)) {
-            console.error('Data format is not as expected:', data);
-            return;
-        }
+        const tableBody = document.getElementById('tbody');
 
         // JSON 데이터를 순회하며 테이블 행 생성
         data.data.forEach((item, index) => {
-            var row = document.createElement('tr');
-            var franchiseName = item.가맹점명.split(' ')[0]; // 공백 앞 첫 단어 추출
+            const store = document.createElement('tr');
+            const franchiseName = item.가맹점명.split(' ')[0]; // 공백 앞 첫 단어 추출
 
-            row.innerHTML = `
+            store.innerHTML = `
                 <td>${index + 1}</td>
                 <td class="fren" name="fren">${franchiseName}</td>
                 <td class="gamen" name="gamen">${item.가맹점명}</td>
@@ -78,91 +74,13 @@
                 <td>${item.평일운영시작시각}</td>
                 <td>${item.토요일운영시작시각}</td>
                 <td class="bedal" name="bedal">${item.배달가능여부}</td>
-                <td><button style="border: none; color: blue; background-color: white" onclick="likeButtonClick(this)">좋아요</button></td>
+                <td><button style="border: none; color: blue" onclick="likeBtnClick(this)">좋아요</button></td>
             `;
-            tableBody.appendChild(row);
+            tableBody.appendChild(store);
         });
     }
 
-    function populateSelect(data) {
-        var siGunGuSelect = document.getElementById('siGunGuSelect');
-        var deliverySelect = document.getElementById('deliverySelect');
-
-        // 기존 옵션 삭제
-        siGunGuSelect.innerHTML = '<option value="">전체</option>';
-        deliverySelect.innerHTML = '<option value="">전체</option>';
-
-        // 데이터 형식 확인
-        if (!data || !data.data || !Array.isArray(data.data)) {
-            console.error('Data format is not as expected:', data);
-            return;
-        }
-
-        // 고유한 시군구명과 배달 가능 여부 수집
-        var uniqueSiGunGu = [];
-        var uniqueDeliveryOptions = [];
-
-        data.data.forEach(item => {
-            if (!uniqueSiGunGu.includes(item.시군구명)) {
-                uniqueSiGunGu.push(item.시군구명);
-            }
-            if (!uniqueDeliveryOptions.includes(item.배달가능여부)) {
-                uniqueDeliveryOptions.push(item.배달가능여부);
-            }
-        });
-
-        // 시군구 select 옵션 생성
-        uniqueSiGunGu.forEach(siGunGu => {
-            var option = document.createElement('option');
-            option.textContent = siGunGu;
-            option.value = siGunGu;
-            siGunGuSelect.appendChild(option);
-        });
-
-        // 배달 가능 여부 select 옵션 생성
-        uniqueDeliveryOptions.forEach(deliveryOption => {
-            var option = document.createElement('option');
-            option.textContent = deliveryOption;
-            option.value = deliveryOption;
-            deliverySelect.appendChild(option);
-        });
-
-        // 시군구 선택 시 필터링
-        siGunGuSelect.addEventListener('change', () => {
-            var selectedSiGunGu = siGunGuSelect.value;
-            var selectedDeliveryOption = deliverySelect.value;
-            var filteredData = originalData;
-
-            if (selectedSiGunGu) {
-                filteredData = filteredData.filter(item => item.시군구명 === selectedSiGunGu);
-            }
-
-            if (selectedDeliveryOption) {
-                filteredData = filteredData.filter(item => item.배달가능여부 === selectedDeliveryOption);
-            }
-
-            populateTable({ data: filteredData }); // 필터링된 데이터를 테이블에 채우기
-        });
-
-        // 배달 가능 여부 선택 시 필터링
-        deliverySelect.addEventListener('change', () => {
-            var selectedSiGunGu = siGunGuSelect.value;
-            var selectedDeliveryOption = deliverySelect.value;
-            var filteredData = originalData;
-
-            if (selectedSiGunGu) {
-                filteredData = filteredData.filter(item => item.시군구명 === selectedSiGunGu);
-            }
-
-            if (selectedDeliveryOption) {
-                filteredData = filteredData.filter(item => item.배달가능여부 === selectedDeliveryOption);
-            }
-
-            populateTable({ data: filteredData }); // 필터링된 데이터를 테이블에 채우기
-        });
-    }
-
-    function likeButtonClick(button) {
+    function likeBtnClick(button) {
         const tr = button.parentElement.parentElement;
         const fren = tr.querySelector('.fren');
         const gamen = tr.querySelector('.gamen');
@@ -180,10 +98,14 @@
                 배달가능여부: bedal.textContent
             })
         }).then(response => {
-            // 서버 응답 처리
-            console.log(fren.textContent)
+            if (response.ok) {
+                return response.json(); // JSON 응답 처리
+            }
+            throw new Error('Network response was not ok.');
+        }).then(data => {
+            console.log(data); // 서버에서 보낸 데이터 처리
         }).catch(error => {
-            console.error('Error sending like count:', error);
+            console.error('There was a problem with the fetch operation:', error);
         });
     }
 </script>
