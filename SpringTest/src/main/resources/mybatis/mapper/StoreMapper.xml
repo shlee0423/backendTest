@@ -9,10 +9,12 @@
         INSERT INTO store (가맹점명, 프랜차이즈명, 배달가능여부)
         VALUES (#{가맹점명}, #{프랜차이즈명}, #{배달가능여부})
     </insert>
+
     <update id="updateLikeCount">
         UPDATE store SET 좋아요수 = 좋아요수 + 1
         WHERE 가맹점명 = #{가맹점명}
     </update>
+
     <select id="selectAllStore" resultType="com.test.StoreDTO">
         SELECT * FROM store
         <if test="keyword != null">
@@ -26,6 +28,7 @@
             </choose>
         </if>
     </select>
+
     <select id="selectStore" resultType="com.test.StoreDTO">
         SELECT * FROM store WHERE 가맹점명 = #{가맹점명}
     </select>

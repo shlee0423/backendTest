@@ -1,6 +1,5 @@
 package com.test;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,6 @@ public class UserService {
         return storeMapper.selectAllStore(keyword);
     }
     public StoreDTO getStore(StoreDTO storeDTO){
-        System.out.println("glglgl");
         return storeMapper.selectStore(storeDTO);
     }
 }

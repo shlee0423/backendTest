@@ -1,9 +1,7 @@
 package com.test;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,9 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Log4j2
 @Controller
 public class TestController {
-    private static final Logger log = LoggerFactory.getLogger(TestController.class);
+
     @Autowired private UserService userService;
     @GetMapping("/**")
     public String start(HttpSession session){
@@ -27,20 +26,19 @@ public class TestController {
         return "redirect:/home";
     }
 
-    @PostMapping("/login")
-    public String login(@RequestParam String username, HttpSession session) {
-        // 간단한 아이디 검증
-        if ("admin".equals(username)) {
-            session.setAttribute("user", username);
-            return "redirect:/admin"; // 관리자 페이지로 이동
-        } else {
-            session.setAttribute("user", username);
-            return "redirect:/home"; // 홈 페이지로 이동
-        }
-    }
-
     @GetMapping("/login")
     public void login() {}
+
+    @PostMapping("/login")
+    public String login(@RequestParam String username, HttpSession session) {
+        if ("admin".equals(username)) {
+            session.setAttribute("user", username);
+            return "redirect:/admin";
+        } else {
+            session.setAttribute("user", username);
+            return "redirect:/home";
+        }
+    }
 
     @GetMapping("/home")
     public void home(){}
@@ -71,7 +69,6 @@ public class TestController {
         }else{
             userService.updateLike(sto);
         }
-        log.info(store.toString());
         return ResponseEntity.ok("{\"message\":\"성공적으로 처리되었습니다.\"}");
     }
 }
